@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: finbot-ingress
+  namespace: lnschatbot
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/use-regex: "true"
+spec:
+  tls:
+  - hosts:
+    - lnschatbot-dev.maersk-digital.net
+    secretName: tls-wildcard-maersk-digital-net
+  rules:
+  - host: lnschatbot-dev.maersk-digital.net
+    http:
+      paths:
+      - path: /finbot-svc(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: finbot-svc
+            port:
+              number: 8000

@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: finbot
+  namespace: lnschatbot
+  labels:
+    app: finbot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: finbot
+  template:
+    metadata:
+      labels:
+        app: finbot
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: finbot-dev
+          image: harbor.maersk.io/lnschatbot/finbot-dev
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: 32Gi
+              cpu: 6
+            requests:
+              memory: 16Gi
+              cpu: 2              
+          volumeMounts:
+            - name: openai-secret-vol
+              mountPath: /etc/openai
+              readOnly: true
+            - name: pg-secret-vol
+              mountPath: /etc/pg
+              readOnly: true
+      tolerations:
+        - key: "kubernetes.azure.com/scalesetpriority"
+          operator: "Equal"
+          value: "spot"
+          effect: "NoSchedule"
+        - key: "maestror2caflslarge"
+          operator: "Equal"
+          value: "true"
+          effect: "NoSchedule"  
+      volumes:
+        - name: openai-secret-vol
+          secret:
+            secretName: finbot-dev-openai-secret
+        - name: pg-secret-vol
+          secret:
+            secretName: finbot-dev-pg-secret
